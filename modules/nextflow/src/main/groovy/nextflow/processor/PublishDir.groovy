@@ -108,6 +108,8 @@ class PublishDir {
 
     private String taskName
 
+    private boolean notify = true
+
     @Lazy
     private ExecutorService threadPool = (Global.session as Session).getFileTransferThreadPool()
 
@@ -361,7 +363,9 @@ class PublishDir {
             processFileImpl(source, destination)
         }
 
-        notifyFilePublish(destination)
+        if( notify ) {
+            notifyFilePublish(destination)
+        }
     }
 
     private String real0(Path p) {
@@ -494,6 +498,5 @@ class PublishDir {
             sess.notifyFilePublish(destination)
         }
     }
-
 
 }
