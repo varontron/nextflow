@@ -44,7 +44,7 @@ class AwsBatchFileCopyStrategyTest extends Specification {
                                         uploads=()
                                         IFS=$'\\n'
                                         for name in $(eval "ls -1d outputs_* final_folder" | sort | uniq); do
-                                            uploads+=("nxf_s3_upload '$name' s3://data/results")
+                                            uploads+=("nxf_s3_upload \"$name\" s3://data/results")
                                         done
                                         unset IFS
                                         nxf_parallel "${uploads[@]}"
@@ -64,7 +64,7 @@ class AwsBatchFileCopyStrategyTest extends Specification {
                     uploads=()
                     IFS=$'\\n'
                     for name in $(eval "ls -1d file.txt" | sort | uniq); do
-                        uploads+=("nxf_s3_upload '$name' s3://foo/bar")
+                        uploads+=("nxf_s3_upload \"$name\" s3://foo/bar")
                     done
                     unset IFS
                     nxf_parallel "${uploads[@]}"
@@ -78,7 +78,7 @@ class AwsBatchFileCopyStrategyTest extends Specification {
                         uploads=()
                         IFS=$'\\n'
                         for name in $(eval "ls -1d file-*.txt" | sort | uniq); do
-                            uploads+=("nxf_s3_upload '$name' s3://foo/bar")
+                            uploads+=("nxf_s3_upload \"$name\" s3://foo/bar")
                         done
                         unset IFS
                         nxf_parallel "${uploads[@]}"
@@ -92,7 +92,7 @@ class AwsBatchFileCopyStrategyTest extends Specification {
                     uploads=()
                     IFS=$'\\n'
                     for name in $(eval "ls -1d file-[a,b].txt" | sort | uniq); do
-                        uploads+=("nxf_s3_upload '$name' s3://foo/bar")
+                        uploads+=("nxf_s3_upload \"$name\" s3://foo/bar")
                     done
                     unset IFS
                     nxf_parallel "${uploads[@]}"
@@ -106,7 +106,7 @@ class AwsBatchFileCopyStrategyTest extends Specification {
                     uploads=()
                     IFS=$'\\n'
                     for name in $(eval "ls -1d file-01\\(A\\).txt f\\ o\\ o.txt" | sort | uniq); do
-                        uploads+=("nxf_s3_upload '$name' s3://foo/bar")
+                        uploads+=("nxf_s3_upload \"$name\" s3://foo/bar")
                     done
                     unset IFS
                     nxf_parallel "${uploads[@]}"

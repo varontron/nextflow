@@ -75,7 +75,7 @@ class AzFileCopyStrategy extends SimpleFileCopyStrategy {
     }
 
     static String uploadCmd(String source, Path targetDir) {
-        "nxf_az_upload '$source' '${AzHelper.toHttpUrl(targetDir)}'"
+        "nxf_az_upload \"$source\" '${AzHelper.toHttpUrl(targetDir)}'"
     }
 
     @Override
@@ -128,7 +128,7 @@ class AzFileCopyStrategy extends SimpleFileCopyStrategy {
             uploads=()
             IFS=\$'\\n'
             for name in \$(eval "ls -1d ${escape.join(' ')}" | sort | uniq); do
-                uploads+=("nxf_az_upload '\$name' '${AzHelper.toHttpUrl(targetDir)}'")
+                uploads+=("nxf_az_upload \"\$name\" '${AzHelper.toHttpUrl(targetDir)}'")
             done
             unset IFS
             nxf_parallel "\${uploads[@]}"

@@ -151,7 +151,7 @@ class GoogleLifeSciencesFileCopyStrategyTest extends GoogleSpecification {
                 uploads=()
                 IFS=$'\\n'
                 for name in $(eval "ls -1d foo.txt dirx" | sort | uniq); do
-                    uploads+=("nxf_gs_upload '$name' gs://other/dir")
+                    uploads+=("nxf_gs_upload \"$name\" gs://other/dir")
                 done
                 unset IFS
                 nxf_parallel "${uploads[@]}"
@@ -166,7 +166,7 @@ class GoogleLifeSciencesFileCopyStrategyTest extends GoogleSpecification {
                 uploads=()
                 IFS=$'\\n'
                 for name in $(eval "ls -1d fo\\ o.txt" | sort | uniq); do
-                    uploads+=("nxf_gs_upload '$name' gs://other/dir\\ x")
+                    uploads+=("nxf_gs_upload \"$name\" gs://other/dir\\ x")
                 done
                 unset IFS
                 nxf_parallel "${uploads[@]}"

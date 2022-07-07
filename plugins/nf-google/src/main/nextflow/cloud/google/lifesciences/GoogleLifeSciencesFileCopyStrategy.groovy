@@ -121,7 +121,7 @@ class GoogleLifeSciencesFileCopyStrategy extends SimpleFileCopyStrategy {
         uploads=()
         IFS=\$'\\n'
         for name in \$(eval "ls -1d ${escape.join(' ')}" | sort | uniq); do
-            uploads+=("nxf_gs_upload '\$name' ${Escape.uriPath(targetDir)}")
+            uploads+=("nxf_gs_upload \"\$name\" ${Escape.uriPath(targetDir)}")
         done
         unset IFS
         nxf_parallel "\${uploads[@]}"
@@ -166,6 +166,6 @@ class GoogleLifeSciencesFileCopyStrategy extends SimpleFileCopyStrategy {
     }
 
     static String uploadCmd(String source, Path target) {
-        "nxf_gs_upload '$source' ${Escape.uriPath(target)}"
+        "nxf_gs_upload \"$source\" ${Escape.uriPath(target)}"
     }
 }

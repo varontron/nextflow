@@ -122,7 +122,7 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
             uploads=()
             IFS=\$'\\n'
             for name in \$(eval "ls -1d ${escape.join(' ')}" | sort | uniq); do
-                uploads+=("nxf_s3_upload '\$name' s3:/${Escape.path(targetDir)}")
+                uploads+=("nxf_s3_upload \"\$name\" s3:/${Escape.path(targetDir)}")
             done
             unset IFS
             nxf_parallel "\${uploads[@]}"
@@ -154,7 +154,7 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
     }
 
     static String uploadCmd( String source, Path target ) {
-        "nxf_s3_upload '$source' s3:/$target"
+        "nxf_s3_upload \"$source\" s3:/$target"
     }
 
     /**
