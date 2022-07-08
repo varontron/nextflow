@@ -188,6 +188,9 @@ class PublishDir {
         if( params.tags != null )
             result.tags = params.tags
 
+        if( params.notify != null )
+            result.notify = Boolean.parseBoolean(params.notify.toString())
+        
         return result
     }
 
