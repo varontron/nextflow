@@ -1368,6 +1368,12 @@ class Session implements ISession {
                 .build()
 
         this.onShutdown {
+            if( aborted ) {
+                pool.shutdownNow()
+                return
+            }
+            pool.shutdown()
+            // wait for ongoing file transfer to complete
             final waitMsg = "Waiting files transfer to complete (%d files)"
             final exitMsg = "Exiting before FileTransfer thread pool complete -- Some files maybe lost"
             ThreadPoolHelper.await(pool, maxAwait, waitMsg, exitMsg)
