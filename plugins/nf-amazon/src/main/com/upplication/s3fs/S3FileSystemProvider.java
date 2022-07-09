@@ -78,6 +78,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -358,66 +359,64 @@ public class S3FileSystemProvider extends FileSystemProvider implements FileSyst
 	}
 
 	@Override
-	public boolean canTransfer(Path source, Path target, CopyOption... options) {
-		return isUpload(source,target) || isDownload(source,target);
-	}
-
-	private boolean isUpload(Path source, Path target) {
+	public boolean canUpload(Path source, Path target) {
 		return FileSystems.getDefault().equals(source.getFileSystem()) && target instanceof S3Path;
 	}
 
-	private boolean isDownload(Path source, Path target) {
+	@Override
+	public boolean canDownload(Path source, Path target) {
 		return source instanceof S3Path && FileSystems.getDefault().equals(target.getFileSystem());
 	}
 
-	@Override
-	public void copyTransfer(Path source, Path target, CopyOption... options) throws IOException {
+	public void download(Path remoteFile, Path localDestination, CopyOption... options) throws IOException {
+		final S3Path source = (S3Path)remoteFile;
+
+		final CopyOptions opts = CopyOptions.parse(options);
+		// delete target if it exists and REPLACE_EXISTING is specified
+		if (opts.replaceExisting()) {
+			FileHelper.deletePath(localDestination);
+		}
+		else if (Files.exists(localDestination))
+			throw new FileAlreadyExistsException(localDestination.toString());
+
+		final Optional<S3FileAttributes> attrs = readAttr1(source);
+		final boolean isDirectory = attrs.isPresent() && attrs.get().isDirectory();
+		final AmazonS3Client s3Client = source.getFileSystem().getClient();
+		if( isDirectory ) {
+			s3Client.downloadDirectory(source, localDestination.toFile());
+		}
+		else {
+			s3Client.downloadFile(source, localDestination.toFile());
+		}
+	}
+
+	public void upload(Path localFile, Path remoteDestination, CopyOption... options) throws IOException {
+		final S3Path target = (S3Path) remoteDestination;
+
 		CopyOptions opts = CopyOptions.parse(options);
 		LinkOption[] linkOptions = (opts.followLinks()) ? new LinkOption[0] : new LinkOption[] { LinkOption.NOFOLLOW_LINKS };
 
 		// attributes of source file
-		BasicFileAttributes attrs = Files.readAttributes(source, BasicFileAttributes.class, linkOptions);
-		if (attrs.isSymbolicLink())
-			throw new IOException("Uploading of symbolic links not supported - offending path: " + source);
+		if (Files.readAttributes(localFile, BasicFileAttributes.class, linkOptions).isSymbolicLink())
+			throw new IOException("Uploading of symbolic links not supported - offending path: " + localFile);
+
+		final Optional<S3FileAttributes> attrs = readAttr1(target);
+		final boolean exits = attrs.isPresent();
+		final boolean isDirectory = attrs.isPresent() && attrs.get().isDirectory();
 
 		// delete target if it exists and REPLACE_EXISTING is specified
 		if (opts.replaceExisting()) {
 			FileHelper.deletePath(target);
 		}
-		else if (Files.exists(target))
+		else if ( exits )
 			throw new FileAlreadyExistsException(target.toString());
 
-		if( isDownload(source,target) ) {
-			S3Path s3Path = (S3Path) source;
-			download(s3Path,target);
-		}
-		else if( isUpload(source, target) ) {
-			S3Path s3Path = (S3Path) target;
-			upload(source,s3Path);
-		}
-		else
-			throw new IllegalStateException("Unable to copy source path=" + source + " to target=" + target);
-	}
-
-	void download(S3Path source, Path target) throws IOException {
-		final boolean isDirectory = readAttr0(source).isDirectory();
-		final AmazonS3Client s3Client = source.getFileSystem().getClient();
-		if( isDirectory ) {
-			s3Client.downloadDirectory(source, target.toFile());
-		}
-		else {
-			s3Client.downloadFile(source, target.toFile());
-		}
-	}
-
-	void upload(Path source, S3Path target) throws IOException {
-		final boolean isDirectory = readAttr0(target).isDirectory();
 		final AmazonS3Client s3Client = target.getFileSystem().getClient();
 		if( isDirectory ) {
-			s3Client.uploadDirectory(source.toFile(), target);
+			s3Client.uploadDirectory(localFile.toFile(), target);
 		}
 		else {
-			s3Client.uploadFile(source.toFile(), target);
+			s3Client.uploadFile(localFile.toFile(), target);
 		}
 	}
 
@@ -762,6 +761,15 @@ public class S3FileSystemProvider extends FileSystemProvider implements FileSyst
 		}
 		// not support attribute class
 		throw new UnsupportedOperationException(format("only %s supported", BasicFileAttributes.class));
+	}
+
+	private Optional<S3FileAttributes> readAttr1(S3Path s3Path) throws IOException {
+		try {
+			return Optional.of(readAttr0(s3Path));
+		}
+		catch (NoSuchFileException e) {
+			return Optional.<S3FileAttributes>empty();
+		}
 	}
 
 	private S3FileAttributes readAttr0(S3Path s3Path) throws IOException {

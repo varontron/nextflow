@@ -10,8 +10,12 @@ import java.nio.file.Path
  */
 interface FileSystemTransferAware {
 
-    boolean canTransfer(Path source, Path target, CopyOption... options)
+    boolean canUpload(Path source, Path target)
 
-    void copyTransfer(Path source, Path target, CopyOption... options) throws IOException
+    boolean canDownload(Path source, Path target)
+
+    void download(Path source, Path target, CopyOption... options) throws IOException
+
+    void upload(Path source, Path target, CopyOption... options) throws IOException
 
 }
