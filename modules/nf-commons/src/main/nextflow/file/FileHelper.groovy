@@ -936,8 +936,8 @@ class FileHelper {
         }
         else {
             // different providers
-            if( provider instanceof FileSystemProviderExt && provider.canCopy(source, target, options)){
-                provider.copyToForeignTarget(source, target, options)
+            if( provider instanceof FileSystemTransferAware && provider.canTransfer(source, target, options)){
+                provider.copyTransfer(source, target, options)
             }else {
                 CopyMoveHelper.copyToForeignTarget(source, target, options)
             }
